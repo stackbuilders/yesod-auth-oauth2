@@ -38,6 +38,8 @@ oauth2AzureADv2
   -- ^ Client Id
   -> Text
   -- ^ Client secret
+  -> Maybe Text
+  -- ^ Application root for building callbacks
   -> AuthPlugin m
 oauth2AzureADv2 = oauth2AzureADv2Scoped defaultScopes
 
@@ -53,8 +55,10 @@ oauth2AzureADv2Scoped
   -- ^ Client Id
   -> Text
   -- ^ Client Secret
+  -> Maybe Text
+  -- ^ Application root for building callbacks
   -> AuthPlugin m
-oauth2AzureADv2Scoped scopes tenantId clientId clientSecret =
+oauth2AzureADv2Scoped scopes tenantId clientId clientSecret appRoot =
   authOAuth2 pluginName oauth2 $ \manager token -> do
     (User userId, userResponse) <-
       authGetProfile
@@ -78,6 +82,7 @@ oauth2AzureADv2Scoped scopes tenantId clientId clientSecret =
           tenantUrl "/authorize" `withQuery` [scopeParam " " scopes]
       , oauth2TokenEndpoint = tenantUrl "/token"
       , oauth2RedirectUri = Nothing
+      , oauth2AppRoot = appRoot
       }
 
   tenantUrl path =

@@ -42,8 +42,8 @@ import Yesod.Auth.OAuth2.Upcase
 import Yesod.Auth.OAuth2.WordPressDotCom
 
 data App = App
-  { appHttpManager :: Manager
-  , appAuthPlugins :: [AuthPlugin App]
+  { appHttpManager :: Manager,
+    appAuthPlugins :: [AuthPlugin App]
   }
 
 mkYesod
@@ -55,7 +55,7 @@ mkYesod
 
 instance Yesod App where
   -- see https://github.com/thoughtbot/yesod-auth-oauth2/issues/87
-  approot = ApprootStatic "http://localhost:3000"
+  approot = ApprootRelative
 
 instance YesodAuth App where
   type AuthId App = Text
@@ -84,19 +84,18 @@ getRootR :: Handler Html
 getRootR = do
   sess <- getSession
 
-  let
-    prettify =
-      decodeUtf8
-        . toStrict
-        . encodePretty
-        . fromJust
-        . decode @Value
-        . fromStrict
+  let prettify =
+        decodeUtf8
+          . toStrict
+          . encodePretty
+          . fromJust
+          . decode @Value
+          . fromStrict
 
-    mCredsIdent = decodeUtf8 <$> M.lookup "credsIdent" sess
-    mCredsPlugin = decodeUtf8 <$> M.lookup "credsPlugin" sess
-    mAccessToken = decodeUtf8 <$> M.lookup "accessToken" sess
-    mUserResponse = prettify <$> M.lookup "userResponse" sess
+      mCredsIdent = decodeUtf8 <$> M.lookup "credsIdent" sess
+      mCredsPlugin = decodeUtf8 <$> M.lookup "credsPlugin" sess
+      mAccessToken = decodeUtf8 <$> M.lookup "accessToken" sess
+      mUserResponse = prettify <$> M.lookup "userResponse" sess
 
   defaultLayout
     [whamlet|
@@ -133,31 +132,31 @@ mkFoundation = do
       --
       -- FIXME: oauth2BattleNet is quite annoying!
       --
-      [ loadPlugin oauth2AzureAD "AZURE_AD"
-      , loadPlugin (oauth2AzureADv2 $ pack azureTenant) "AZURE_ADV2"
-      , loadPlugin (oauth2Auth0Host $ fromString auth0Host) "AUTH0"
-      , loadPlugin (oauth2BattleNet [whamlet|TODO|] "en") "BATTLE_NET"
-      , loadPlugin oauth2Bitbucket "BITBUCKET"
-      , loadPlugin oauth2ClassLink "CLASSLINK"
-      , loadPlugin (oauth2Eve Plain) "EVE_ONLINE"
-      , loadPlugin oauth2GitHub "GITHUB"
-      , loadPlugin oauth2GitLab "GITLAB"
-      , loadPlugin oauth2Google "GOOGLE"
-      , loadPlugin oauth2Nylas "NYLAS"
-      , loadPlugin oauth2Salesforce "SALES_FORCE"
-      , loadPlugin oauth2Slack "SLACK"
-      , loadPlugin (oauth2Spotify []) "SPOTIFY"
-      , loadPlugin oauth2Twitch "TWITCH"
-      , loadPlugin oauth2WordPressDotCom "WORDPRESS_DOT_COM"
-      , loadPlugin oauth2Upcase "UPCASE"
+      [ loadPlugin oauth2AzureAD "AZURE_AD",
+        loadPlugin (\a b -> oauth2AzureADv2 (pack azureTenant) a b (Just "http://localhost:3000")) "AZURE_ADV2",
+        loadPlugin (oauth2Auth0Host $ fromString auth0Host) "AUTH0",
+        loadPlugin (oauth2BattleNet [whamlet|TODO|] "en") "BATTLE_NET",
+        loadPlugin oauth2Bitbucket "BITBUCKET",
+        loadPlugin oauth2ClassLink "CLASSLINK",
+        loadPlugin (oauth2Eve Plain) "EVE_ONLINE",
+        loadPlugin oauth2GitHub "GITHUB",
+        loadPlugin oauth2GitLab "GITLAB",
+        loadPlugin oauth2Google "GOOGLE",
+        loadPlugin oauth2Nylas "NYLAS",
+        loadPlugin oauth2Salesforce "SALES_FORCE",
+        loadPlugin oauth2Slack "SLACK",
+        loadPlugin (oauth2Spotify []) "SPOTIFY",
+        loadPlugin oauth2Twitch "TWITCH",
+        loadPlugin oauth2WordPressDotCom "WORDPRESS_DOT_COM",
+        loadPlugin oauth2Upcase "UPCASE"
       ]
 
   return App {..}
- where
-  loadPlugin f prefix = do
-    clientId <- getEnv $ prefix <> "_CLIENT_ID"
-    clientSecret <- getEnv $ prefix <> "_CLIENT_SECRET"
-    pure $ f (T.pack clientId) (T.pack clientSecret)
+  where
+    loadPlugin f prefix = do
+      clientId <- getEnv $ prefix <> "_CLIENT_ID"
+      clientSecret <- getEnv $ prefix <> "_CLIENT_SECRET"
+      pure $ f (T.pack clientId) (T.pack clientSecret)
 
 main :: IO ()
 main = runEnv 3000 =<< toWaiApp =<< mkFoundation

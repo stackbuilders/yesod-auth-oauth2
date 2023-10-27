@@ -57,6 +57,7 @@ oauth2BattleNet widget region clientId clientSecret =
       , oauth2AuthorizeEndpoint = fromRelative "https" host "/oauth/authorize"
       , oauth2TokenEndpoint = fromRelative "https" host "/oauth/token"
       , oauth2RedirectUri = Nothing
+      , oauth2AppRoot = Nothing
       }
 
 apiHost :: Text -> Host

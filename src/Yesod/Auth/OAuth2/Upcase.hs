@@ -48,4 +48,5 @@ oauth2Upcase clientId clientSecret =
       , oauth2AuthorizeEndpoint = "http://upcase.com/oauth/authorize"
       , oauth2TokenEndpoint = "http://upcase.com/oauth/token"
       , oauth2RedirectUri = Nothing
+      , oauth2AppRoot = Nothing
       }

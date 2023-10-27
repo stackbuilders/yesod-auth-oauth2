@@ -80,4 +80,5 @@ salesforceHelper name profileUri authorizeUri tokenUri scopes clientId clientSec
       , oauth2AuthorizeEndpoint = authorizeUri `withQuery` [scopeParam " " scopes]
       , oauth2TokenEndpoint = tokenUri
       , oauth2RedirectUri = Nothing
+      , oauth2AppRoot = Nothing
       }

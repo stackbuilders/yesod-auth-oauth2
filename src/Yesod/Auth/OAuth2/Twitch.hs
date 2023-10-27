@@ -59,4 +59,5 @@ oauth2TwitchScoped scopes clientId clientSecret =
                         , ("client_secret", T.encodeUtf8 clientSecret)
                         ]
       , oauth2RedirectUri = Nothing
+      , oauth2AppRoot = Nothing
       }
